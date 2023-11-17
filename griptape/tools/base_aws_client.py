@@ -1,10 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from abc import ABC
-from attr import define, field
+from attr import define, field, Factory
 from griptape.artifacts import TextArtifact, ErrorArtifact, BaseArtifact
 from griptape.tools import BaseTool
 from griptape.utils.decorators import activity
+from griptape.utils import import_optional_dependency
 
 if TYPE_CHECKING:
     import boto3
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
 
 @define
 class BaseAwsClient(BaseTool, ABC):
-    session: boto3.Session = field(kw_only=True)
+    session: boto3.Session = field(default=Factory(lambda: import_optional_dependency("boto3").Session()), kw_only=True)
 
     @activity(config={"description": "Can be used to get current AWS account and IAM principal."})
     def get_current_aws_identity(self, params: dict) -> BaseArtifact:

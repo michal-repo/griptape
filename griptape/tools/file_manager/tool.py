@@ -152,7 +152,7 @@ class FileManager(BaseTool):
     def _save_to_disk(self, path: str, value: any) -> None:
         os.makedirs(os.path.dirname(path), exist_ok=True)
 
-        with open(path, "wb") as file:
+        with open(path, "ab") as file:
             if isinstance(value, str):
                 if self.save_file_encoding:
                     file.write(value.encode(self.save_file_encoding))
