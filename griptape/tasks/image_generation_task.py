@@ -6,7 +6,7 @@ import string
 import time
 from os import path
 from attr import define, field
-from griptape.artifacts import ImageArtifact
+from griptape.artifacts import ImageArtifact, InfoArtifact
 from griptape.engines import ImageGenerationEngine
 from griptape.rules import Rule, Ruleset
 from griptape.tasks import BaseTextInputTask
@@ -17,7 +17,6 @@ class ImageGenerationTask(BaseTextInputTask):
     NEGATIVE_RULESET_NAME = "Negative Ruleset"
 
     image_generation_engine: ImageGenerationEngine = field(kw_only=True)
-    output_dir: str = field(kw_only=True)
     negative_rulesets: list[Ruleset] = field(factory=list, kw_only=True)
     negative_rules: list[Rule] = field(factory=list, kw_only=True)
 
@@ -48,12 +47,21 @@ class ImageGenerationTask(BaseTextInputTask):
 
         return task_rulesets
 
-    def run(self) -> ImageArtifact:
+    def run(self) -> ImageArtifact | InfoArtifact:
+        if self.input_artifact_namespace:
+            memory_artifacts = self.task_memory.load_artifacts(self.input_artifact_namespace)
+            if memory_artifacts:
+                text = memory_artifacts[0].to_text()
+            else:
+                text = self.input.to_text()
+        else:
+            text = self.input.to_text()
+
         image_artifact = self.image_generation_engine.generate_image(
-            prompts=[self.input.to_text()], rulesets=self.all_rulesets, negative_rulesets=self.negative_rulesets
+            prompts=[text], rulesets=self.all_rulesets, negative_rulesets=self.negative_rulesets
         )
 
-        self._save_to_file(image_artifact)
+        self.output = image_artifact
 
         return image_artifact
 
