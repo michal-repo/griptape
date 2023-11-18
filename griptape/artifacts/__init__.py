@@ -6,6 +6,7 @@ from .blob_artifact import BlobArtifact
 from .csv_row_artifact import CsvRowArtifact
 from .list_artifact import ListArtifact
 from .image_artifact import ImageArtifact
+from .json_artifact import JsonArtifact
 
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "CsvRowArtifact",
     "ListArtifact",
     "ImageArtifact",
+    "JsonArtifact",
 ]
