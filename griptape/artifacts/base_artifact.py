@@ -1,28 +1,37 @@
 from __future__ import annotations
 import json
+from typing import TYPE_CHECKING, Any, Optional
 import uuid
 from abc import ABC, abstractmethod
 from attr import define, field, Factory
 from marshmallow import class_registry
 from marshmallow.exceptions import RegistryError
 
+if TYPE_CHECKING:
+    from griptape.drivers import BaseEmbeddingDriver
+
 
 @define
 class BaseArtifact(ABC):
     id: str = field(default=Factory(lambda: uuid.uuid4().hex), kw_only=True)
     name: str = field(default=Factory(lambda self: self.id, takes_self=True), kw_only=True)
-    value: any = field()
+    value: Any = field()
     type: str = field(default=Factory(lambda self: self.__class__.__name__, takes_self=True), kw_only=True)
+    _embedding: list[float] = field(factory=list, kw_only=True)
+
+    @property
+    def embedding(self) -> Optional[list[float]]:
+        return None if len(self._embedding) == 0 else self._embedding
 
     @classmethod
-    def value_to_bytes(cls, value: any) -> bytes:
+    def value_to_bytes(cls, value: Any) -> bytes:
         if isinstance(value, bytes):
             return value
         else:
             return str(value).encode()
 
     @classmethod
-    def value_to_dict(cls, value: any) -> dict:
+    def value_to_dict(cls, value: Any) -> dict:
         if isinstance(value, dict):
             dict_value = value
         else:
@@ -40,6 +49,7 @@ class BaseArtifact(ABC):
             CsvRowArtifactSchema,
             ListArtifactSchema,
             ImageArtifactSchema,
+            JsonArtifactSchema,
         )
 
         class_registry.register("TextArtifact", TextArtifactSchema)
@@ -49,6 +59,7 @@ class BaseArtifact(ABC):
         class_registry.register("CsvRowArtifact", CsvRowArtifactSchema)
         class_registry.register("ListArtifact", ListArtifactSchema)
         class_registry.register("ImageArtifact", ImageArtifactSchema)
+        class_registry.register("JsonArtifact", JsonArtifactSchema)
 
         try:
             return class_registry.get_class(artifact_dict["type"])().load(artifact_dict)
@@ -58,6 +69,12 @@ class BaseArtifact(ABC):
     @classmethod
     def from_json(cls, artifact_str: str) -> BaseArtifact:
         return cls.from_dict(json.loads(artifact_str))
+
+    def generate_embedding(self, driver: BaseEmbeddingDriver) -> list[float]:
+        self._embedding.clear()
+        self._embedding.extend(driver.embed_string(str(self.value)))
+
+        return self.embedding
 
     def __bool__(self) -> bool:
         return bool(self.value)

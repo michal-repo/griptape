@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import Optional
 from attr import define, field, Factory
 from griptape import utils
-from griptape.artifacts import TextArtifact
-from griptape.drivers import BaseEmbeddingDriver, OpenAiEmbeddingDriver
+from griptape.artifacts import BaseArtifact
+from griptape.drivers import BaseEmbeddingDriver
 
 
 @define
@@ -31,7 +31,7 @@ class BaseVectorStoreDriver(ABC):
     futures_executor: futures.Executor = field(default=Factory(lambda: futures.ThreadPoolExecutor()), kw_only=True)
 
     def upsert_text_artifacts(
-        self, artifacts: dict[str, list[TextArtifact]], meta: Optional[dict] = None, **kwargs
+        self, artifacts: dict[str, list[BaseArtifact]], meta: Optional[dict] = None, **kwargs
     ) -> None:
         utils.execute_futures_dict(
             {
@@ -42,7 +42,7 @@ class BaseVectorStoreDriver(ABC):
         )
 
     def upsert_text_artifact(
-        self, artifact: TextArtifact, namespace: Optional[str] = None, meta: Optional[dict] = None, **kwargs
+        self, artifact: BaseArtifact, namespace: Optional[str] = None, meta: Optional[dict] = None, **kwargs
     ) -> str:
         if not meta:
             meta = {}

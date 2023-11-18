@@ -39,7 +39,4 @@ class VectorStoreClient(BaseTool):
     def search(self, params: dict) -> BaseArtifact:
         query = params["values"]["query"]
 
-        try:
-            return self.query_engine.query(query, top_n=self.top_n, namespace=self.namespace)
-        except Exception as e:
-            return ErrorArtifact(f"error querying vector store: {e}")
+        return self.query_engine.query(query, top_n=self.top_n, namespace=self.namespace)
