@@ -1,15 +1,19 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Callable
 from attr import define, field, Factory
-from rich.console import Console
+import logging
+from rich import print
 from rich.live import Live
+from rich.layout import Layout
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.text import Text
+from rich.prompt import Prompt
+from griptape.utils.stream import Stream
+from griptape.events import EventListener, CompletionChunkEvent, StartTaskEvent, BaseEvent
 
 if TYPE_CHECKING:
     from griptape.structures import Structure
-from griptape.utils.stream import Stream
 
 
 @define(frozen=True)
@@ -26,9 +30,9 @@ class Chat:
 
     def start(self) -> None:
         if self.intro_text:
-            self.output_fn(self.intro_text)
+            print(Panel(Text(self.intro_text, style="light_steel_blue3"), title="Intro"))
         while True:
-            question = input(self.prompt_prefix)
+            question = Prompt.ask(Text(self.prompt_prefix, style="light_steel_blue3"))
 
             if question.lower() in self.exit_keywords:
                 self.output_fn(self.exiting_text)
@@ -37,18 +41,45 @@ class Chat:
                 self.output_fn(self.processing_text)
 
             if self.structure.prompt_driver.stream:
-                with Live("", transient=True) as live:
-                    stream = Stream(self.structure).run(question)
-                    first_chunk = next(stream)
-                    # self.streaming_output_fn(self.response_prefix + first_chunk.value)
-                    for chunk in stream:
-                        # self.streaming_output_fn(chunk.value)
-                        # Update the Live display with each character
+                global output
+                output = ""
 
-                        # Wrap in Text object with style
-                        text_with_style = Panel.fit(Text(chunk.value))
-                        live.update(text_with_style)
-                    # self.streaming_output_fn("\n")
-                markdown = Markdown(self.structure.output_task.output.to_text())
+                def generate_layout(structure: Structure, output: str) -> Layout:
+                    layout = Layout()
+                    layouts = []
+                    for task in structure.tasks:
+                        if task.output:
+                            layout_id = f"task_{task.id}"
+                            finished_layout = Layout(
+                                Panel(Markdown(task.output.to_text(), style="light_steel_blue3"), title=layout_id),
+                                name=layout_id,
+                            )
+                            layouts.append(finished_layout)
+
+                    layouts.append(
+                        Layout(Panel(Text(output, style="light_steel_blue3"), title="Output"), name="output")
+                    )
+
+                    layout.split_column(*layouts)
+
+                    return layout
+
+                with Live(generate_layout(self.structure, "")) as live:
+
+                    def event_handler(e: BaseEvent):
+                        global output, title
+                        if isinstance(e, CompletionChunkEvent):
+                            output += e.token
+                        elif isinstance(e, StartTaskEvent):
+                            output = ""
+                        live.update(generate_layout(self.structure, output))
+
+                    stream_event_listener = EventListener(
+                        lambda e: event_handler(e), event_types=[CompletionChunkEvent, StartTaskEvent]
+                    )
+                    self.structure.logger_level = logging.ERROR
+                    self.structure.add_event_listener(stream_event_listener)
+                    self.structure.run(question)
+                    self.structure.remove_event_listener(stream_event_listener)
             else:
                 self.output_fn(f"{self.response_prefix}{self.structure.run(question).output.to_text()}")
