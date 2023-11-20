@@ -1,9 +1,15 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Callable
 from attr import define, field, Factory
+from rich.console import Console
+from rich.live import Live
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.text import Text
 
 if TYPE_CHECKING:
     from griptape.structures import Structure
+from griptape.utils.stream import Stream
 
 
 @define(frozen=True)
@@ -15,6 +21,7 @@ class Chat:
     intro_text: Optional[str] = field(default=None, kw_only=True)
     prompt_prefix: str = field(default="Q: ", kw_only=True)
     response_prefix: str = field(default="A: ", kw_only=True)
+    streaming_output_fn: Callable[[str], None] = field(default=lambda x: print(x, end=""), kw_only=True)
     output_fn: Callable[[str], None] = field(default=Factory(lambda: print), kw_only=True)
 
     def start(self) -> None:
@@ -25,9 +32,23 @@ class Chat:
 
             if question.lower() in self.exit_keywords:
                 self.output_fn(self.exiting_text)
-
                 break
             else:
                 self.output_fn(self.processing_text)
 
-            self.output_fn(f"{self.response_prefix}{self.structure.run(question).output_task.output.to_text()}")
+            if self.structure.prompt_driver.stream:
+                with Live("", transient=True) as live:
+                    stream = Stream(self.structure).run(question)
+                    first_chunk = next(stream)
+                    # self.streaming_output_fn(self.response_prefix + first_chunk.value)
+                    for chunk in stream:
+                        # self.streaming_output_fn(chunk.value)
+                        # Update the Live display with each character
+
+                        # Wrap in Text object with style
+                        text_with_style = Panel.fit(Text(chunk.value))
+                        live.update(text_with_style)
+                    # self.streaming_output_fn("\n")
+                markdown = Markdown(self.structure.output_task.output.to_text())
+            else:
+                self.output_fn(f"{self.response_prefix}{self.structure.run(question).output.to_text()}")
