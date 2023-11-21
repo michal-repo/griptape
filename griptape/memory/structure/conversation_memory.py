@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Callable
 from attr import define, field, Factory
 from griptape.memory.structure import Run
 from griptape.utils import PromptStack
@@ -19,12 +19,18 @@ class ConversationMemory:
     autoload: bool = field(default=True, kw_only=True)
     autoprune: bool = field(default=True, kw_only=True)
     max_runs: Optional[int] = field(default=None, kw_only=True)
+    structure_to_run: Callable = field(
+        default=Factory(lambda self: self.default_structure_to_run_converter, takes_self=True), kw_only=True
+    )
 
     def __attrs_post_init__(self) -> None:
         if self.driver and self.autoload:
             memory = self.driver.load()
             if memory is not None:
                 [self.add_run(r) for r in memory.runs]
+
+    def default_structure_to_run_converter(self, structure: Structure) -> Run:
+        return Run(input=structure.input_task.input.to_text(), output=structure.output_task.output.to_text())
 
     def add_run(self, run: Run) -> ConversationMemory:
         self.before_add_run()
