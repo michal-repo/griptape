@@ -5,6 +5,7 @@ from griptape.artifacts import TextArtifact, BaseArtifact, ListArtifact
 from griptape.utils import PromptStack
 from griptape.drivers import OpenAiChatPromptDriver
 from griptape.engines import BaseQueryEngine
+from griptape.rules import Ruleset
 from griptape.utils.j2 import J2
 from griptape.tokenizers import OpenAiTokenizer
 
@@ -28,7 +29,7 @@ class VectorQueryEngine(BaseQueryEngine):
         metadata: Optional[str] = None,
         top_n: Optional[int] = None,
         namespace: Optional[str] = None,
-        rulesets: Optional[str] = None,
+        rulesets: Optional[list[Ruleset]] = None,
     ) -> TextArtifact:
         tokenizer = self.prompt_driver.tokenizer
         result = self.vector_store_driver.query(query, top_n, namespace)

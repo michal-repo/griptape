@@ -5,6 +5,7 @@ from attr import define, field
 from griptape.artifacts import BaseArtifact, ErrorArtifact
 from griptape.tools import BaseTool
 from griptape.utils.decorators import activity
+from griptape.rules import Ruleset
 
 
 @define
@@ -23,6 +24,7 @@ class VectorStoreClient(BaseTool):
     query_engine: VectorQueryEngine = field(kw_only=True)
     top_n: int = field(default=DEFAULT_TOP_N, kw_only=True)
     namespace: Optional[str] = field(default=None, kw_only=True)
+    query_engine_rulesets: Optional[list[Ruleset]] = field(default=None, kw_only=True)
 
     @activity(
         config={
@@ -39,4 +41,9 @@ class VectorStoreClient(BaseTool):
     def search(self, params: dict) -> BaseArtifact:
         query = params["values"]["query"]
 
-        return self.query_engine.query(query, top_n=self.top_n, namespace=self.namespace)
+        try:
+            return self.query_engine.query(
+                query, top_n=self.top_n, namespace=self.namespace, rulesets=self.query_engine_rulesets
+            )
+        except Exception as e:
+            return ErrorArtifact(f"error querying vector store: {e}")
