@@ -1,13 +1,13 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Type, Any, Callable
+from typing import TYPE_CHECKING, Optional, Type, Any
 from attr import define, field, Factory
-from griptape.artifacts import BaseArtifact, InfoArtifact, ListArtifact, ErrorArtifact, TextArtifact
-from griptape.memory.meta import ActionSubtaskMetaEntry
+from griptape.artifacts import BaseArtifact, InfoArtifact, ListArtifact, ErrorArtifact, TextArtifact, ImageArtifact
+from griptape.memory.meta import ActionSubtaskMetaEntry, TaskMemoryMetaEntry
 from griptape.mixins import ActivityMixin
 
 if TYPE_CHECKING:
     from griptape.memory.task.storage import BaseArtifactStorage
-    from griptape.tasks import ActionSubtask
+    from griptape.tasks import BaseTask
 
 
 @define
@@ -38,14 +38,11 @@ class TaskMemory(ActivityMixin):
         else:
             return find_storage(artifact)
 
-    def process_output(
-        self, tool_activity: Callable, subtask: ActionSubtask, output_artifact: BaseArtifact
-    ) -> BaseArtifact:
+    def process_output(self, task: BaseTask, output_artifact: BaseArtifact) -> BaseArtifact:
+        from griptape.tasks import ActionSubtask
         from griptape.utils import J2
 
-        tool_name = tool_activity.__self__.name
-        activity_name = tool_activity.name
-        namespace = output_artifact.name
+        namespace = task.output_artifact_namespace or output_artifact.name
 
         if output_artifact:
             result = self.store_artifact(namespace, output_artifact)
@@ -53,23 +50,35 @@ class TaskMemory(ActivityMixin):
             if result:
                 return result
             else:
-                self.namespace_metadata[namespace] = subtask.action_to_json()
-
-                output = J2("memory/tool.j2").render(
-                    memory_name=self.name,
-                    tool_name=tool_name,
-                    activity_name=activity_name,
-                    artifact_namespace=namespace,
+                task_output_name = (
+                    f"{task.action_name}.{task.action_path}" if isinstance(task, ActionSubtask) else task.name
+                )
+                output = J2("memory/task.j2").render(
+                    memory_name=self.name, task_output_name=task_output_name, artifact_namespace=namespace
                 )
 
-                if subtask.structure and subtask.structure.meta_memory:
-                    subtask.structure.meta_memory.add_entry(
-                        ActionSubtaskMetaEntry(thought=subtask.thought, action=subtask.action_to_json(), answer=output)
+                if task.structure and task.structure.meta_memory:
+                    if isinstance(task, ActionSubtask):
+                        self.namespace_metadata[namespace] = task.action_to_json()
+                        if task.thought and task.answer:
+                            task.structure.meta_memory.add_entry(
+                                ActionSubtaskMetaEntry(
+                                    thought=task.thought, action=task.action_to_json(), answer=task.answer
+                                )
+                            )
+
+                    task.structure.meta_memory.add_entry(
+                        TaskMemoryMetaEntry(
+                            output=output,
+                            # task_memory_name=self.name,
+                            # task_output_name=task_output_name,
+                            # output_artifact_namespace=task.output_artifact_namespace,
+                        )
                     )
 
                 return InfoArtifact(output)
         else:
-            return InfoArtifact("tool output is empty")
+            return InfoArtifact("task output is empty")
 
     def store_artifact(self, namespace: str, artifact: BaseArtifact) -> Optional[BaseArtifact]:
         namespace_storage = self.namespace_storage.get(namespace)
@@ -106,12 +115,6 @@ class TaskMemory(ActivityMixin):
             return storage.load_artifacts(namespace)
         else:
             return ListArtifact()
-
-    def find_input_memory(self, memory_name: str) -> Optional[TaskMemory]:
-        if memory_name == self.name:
-            return self
-        else:
-            return None
 
     def summarize_namespace(self, namespace: str) -> TextArtifact | InfoArtifact:
         storage = self.namespace_storage.get(namespace)

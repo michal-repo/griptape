@@ -5,29 +5,48 @@ from enum import Enum
 from typing import TYPE_CHECKING, Optional
 from attr import define, field, Factory
 from griptape.events import StartTaskEvent, FinishTaskEvent
-from griptape.artifacts import ErrorArtifact
+from griptape.artifacts import ErrorArtifact, TextArtifact, InfoArtifact, BaseArtifact
 
 if TYPE_CHECKING:
-    from griptape.artifacts import BaseArtifact
     from griptape.structures import Structure
     from griptape.memory.meta import BaseMetaEntry
+    from griptape.memory import TaskMemory
 
 
 @define
 class BaseTask(ABC):
+    """Abstract class for all tasks to inherit from.
+
+    Attributes:
+        input_memory: TaskMemory available in tool activities. Gets automatically set if None.
+        output_memory: TaskMemory that activities write to be default. Gets automatically set if None.
+        off_prompt: Determines whether tool activity output goes to the output memory.
+    """
+
     class State(Enum):
         PENDING = 1
         EXECUTING = 2
         FINISHED = 3
 
     id: str = field(default=Factory(lambda: uuid.uuid4().hex), kw_only=True)
+    name: str = field(default=Factory(lambda self: self.class_name, takes_self=True), kw_only=True)
     state: State = field(default=State.PENDING, kw_only=True)
     parent_ids: list[str] = field(factory=list, kw_only=True)
     child_ids: list[str] = field(factory=list, kw_only=True)
     max_meta_memory_entries: Optional[int] = field(default=20, kw_only=True)
+    off_prompt: bool = field(default=False, kw_only=True)
+    task_memory: Optional[TaskMemory] = field(default=None, kw_only=True)
+    input_memory: Optional[list[TaskMemory]] = field(default=None, kw_only=True)
+    output_memory: Optional[list[TaskMemory]] = field(default=None, kw_only=True)
+    input_artifact_namespace: Optional[str] = field(default=None, kw_only=True)
+    output_artifact_namespace: Optional[str] = field(default=None, kw_only=True)
 
     output: Optional[BaseArtifact] = field(default=None, init=False)
     structure: Optional[Structure] = field(default=None, init=False)
+
+    @property
+    def class_name(self):
+        return self.__class__.__name__
 
     @property
     @abstractmethod
@@ -55,8 +74,27 @@ class BaseTask(ABC):
     def __str__(self) -> str:
         return str(self.output.value)
 
+    @input_memory.validator
+    def validate_input_memory(self, _, input_memory: list[TaskMemory]) -> None:
+        if input_memory:
+            input_memory_names = [m.name for m in input_memory]
+
+            if len(input_memory_names) > len(set(input_memory_names)):
+                raise ValueError("memory names have to be unique in input memory")
+
+    @output_memory.validator
+    def validate_output_memory(self, _, output_memory: list[TaskMemory]) -> None:
+        if output_memory:
+            output_memory_names = [m.name for m in output_memory]
+
+            if len(output_memory_names) > len(set(output_memory_names)):
+                raise ValueError("memory names have to be unique in output memory")
+
     def preprocess(self, structure: Structure) -> BaseTask:
         self.structure = structure
+
+        if self.task_memory is None and structure.task_memory:
+            self.set_default_task_memory(structure.task_memory)
 
         return self
 
@@ -73,9 +111,20 @@ class BaseTask(ABC):
         if self.structure:
             self.structure.publish_event(StartTaskEvent.from_task(self))
 
-    def after_run(self) -> None:
+    def after_run(self, output: BaseArtifact) -> BaseArtifact:
         if self.structure:
             self.structure.publish_event(FinishTaskEvent.from_task(self))
+
+        if output:
+            if self.output_memory:
+                for memory in self.output_memory:
+                    output = memory.process_output(self, output)
+
+                return output
+            else:
+                return output
+        else:
+            return InfoArtifact("Tool returned an empty output")
 
     def execute(self) -> Optional[BaseArtifact]:
         try:
@@ -83,9 +132,9 @@ class BaseTask(ABC):
 
             self.before_run()
 
-            self.output = self.run()
+            output = self.run()
 
-            self.after_run()
+            self.output = self.after_run(output)
         except Exception as e:
             self.structure.logger.error(f"{self.__class__.__name__} {self.id}\n{e}", exc_info=True)
 
@@ -103,6 +152,27 @@ class BaseTask(ABC):
         self.output = None
 
         return self
+
+    def set_default_task_memory(self, memory: Optional[TaskMemory]) -> None:
+        self.task_memory = memory
+
+        if self.task_memory:
+            if self.input_memory is None:
+                self.input_memory = [self.task_memory]
+            if self.output_memory is None and self.off_prompt:
+                self.output_memory = [self.task_memory]
+
+    def find_input_memory(self, memory_name: str) -> Optional[TaskMemory]:
+        if self.input_memory:
+            return next((m for m in self.input_memory if m.name == memory_name), None)
+        else:
+            return None
+
+    def find_outpt_memory(self, memory_name: str) -> Optional[TaskMemory]:
+        if self.output_memory:
+            return next((m for m in self.output_memory if m.name == memory_name), None)
+        else:
+            return None
 
     @abstractmethod
     def run(self) -> BaseArtifact:
