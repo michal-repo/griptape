@@ -75,7 +75,11 @@ class LeonardoImageGenerationDriver(BaseImageGenerationDriver):
             url=f"{self.api_base}/generations", headers={"Authorization": f"Bearer {self.api_key}"}, json=request
         ).json()
 
-        return response["sdGenerationJob"]["generationId"]
+        if "sdGenerationJob" in response:
+            return response["sdGenerationJob"]["generationId"]
+        else:
+            print(response)
+            raise Exception("image generation failed to start")
 
     def _get_image_url(self, generation_id: str):
         for attempt in range(self.max_attempts):
