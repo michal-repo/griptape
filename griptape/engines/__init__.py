@@ -8,7 +8,8 @@ from .extraction.base_extraction_engine import BaseExtractionEngine
 from .extraction.csv_extraction_engine import CsvExtractionEngine
 from .extraction.json_extraction_engine import JsonExtractionEngine
 
-from .image_generation.image_generation_engine import ImageGenerationEngine
+from .image.image_generation_engine import ImageGenerationEngine
+from .image.image_modification_engine import ImageModificationEngine
 
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "CsvExtractionEngine",
     "JsonExtractionEngine",
     "ImageGenerationEngine",
+    "ImageModificationEngine",
 ]

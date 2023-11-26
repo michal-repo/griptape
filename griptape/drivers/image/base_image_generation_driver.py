@@ -4,13 +4,11 @@ from typing import Optional
 from attr import define, field
 
 from griptape.artifacts import ImageArtifact
-from griptape.mixins import ExponentialBackoffMixin
+from griptape.drivers import BaseImageDriver
 
 
 @define
-class BaseImageGenerationDriver(ExponentialBackoffMixin, ABC):
-    model: str = field(kw_only=True)
-
+class BaseImageGenerationDriver(BaseImageDriver):
     def generate_image(self, prompts: list[str], negative_prompts: Optional[list[str]] = None) -> ImageArtifact:
         for attempt in self.retrying():
             with attempt:
