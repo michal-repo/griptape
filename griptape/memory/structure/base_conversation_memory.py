@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from marshmallow import Schema
 from marshmallow import class_registry
 from attr import define, field

@@ -3,6 +3,7 @@ from __future__ import annotations
 import string
 import time
 import random
+from typing import Optional
 from attr import define, field, Factory
 from griptape.artifacts import BlobArtifact
 
