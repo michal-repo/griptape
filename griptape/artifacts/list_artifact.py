@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Sequence
 from attr import field, define
 from griptape.artifacts import BaseArtifact
 
