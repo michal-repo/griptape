@@ -29,6 +29,7 @@ docker = "^6.1.3"
 sqlalchemy = "~=1.0"
 dateparser = "^1.1.8"
 requests = "^2"
+lxml = "^4.9.3" # TODO: remove when https://github.com/adbar/trafilatura/issues/449 is fully resolved
 boto3-stubs = {extras = ["bedrock", "iam", "opensearch", "s3", "sagemaker"], version = "^1.34.18"}
 
 # drivers
