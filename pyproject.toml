@@ -98,7 +98,6 @@ all = [
     "boto3",
     "snowflake-sqlalchemy",
     "snowflake",
-    "marqo",
     "pinecone-client",
     "pymongo",
     "redis",
