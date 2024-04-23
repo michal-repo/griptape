@@ -62,7 +62,7 @@ class AnthropicPromptDriver(BasePromptDriver):
             "model": self.model,
             "temperature": self.temperature,
             "stop_sequences": self.tokenizer.stop_sequences,
-            "max_tokens": self.max_output_tokens(self.prompt_stack_to_string(prompt_stack)),
+            "max_tokens": self.max_tokens or self.max_output_tokens(self.prompt_stack_to_string(prompt_stack)),
             "top_p": self.top_p,
             "top_k": self.top_k,
             **self._prompt_stack_to_model_input(prompt_stack),
