@@ -3,9 +3,9 @@ from collections.abc import Iterator
 from attrs import define
 
 from griptape.artifacts import TextArtifact, TextChunkArtifact
+from griptape.common import PromptStack
 from griptape.drivers import BasePromptDriver
 from griptape.tokenizers import BaseTokenizer, OpenAiTokenizer
-from griptape.utils import PromptStack
 
 
 @define

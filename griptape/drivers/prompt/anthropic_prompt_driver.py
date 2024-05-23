@@ -6,9 +6,10 @@ from typing import Any, Optional
 from attrs import Factory, define, field
 
 from griptape.artifacts import TextArtifact, TextChunkArtifact
+from griptape.common import PromptStack
 from griptape.drivers import BasePromptDriver
 from griptape.tokenizers import AnthropicTokenizer
-from griptape.utils import PromptStack, import_optional_dependency
+from griptape.utils import import_optional_dependency
 
 
 @define

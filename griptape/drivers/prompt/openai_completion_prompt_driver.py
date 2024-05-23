@@ -5,9 +5,9 @@ import openai
 from attrs import Factory, define, field
 
 from griptape.artifacts import TextArtifact, TextChunkArtifact
+from griptape.common import PromptStack
 from griptape.drivers import BasePromptDriver
 from griptape.tokenizers import OpenAiTokenizer
-from griptape.utils import PromptStack
 
 
 @define

@@ -14,7 +14,7 @@ from .base_multi_model_prompt_driver import BaseMultiModelPromptDriver
 if TYPE_CHECKING:
     import boto3
 
-    from griptape.utils import PromptStack
+    from griptape.common import PromptStack
 
 
 @define
