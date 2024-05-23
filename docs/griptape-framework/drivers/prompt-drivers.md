@@ -401,6 +401,16 @@ through the [prompt_model_driver](../../reference/griptape/drivers/prompt/base_m
 
 The [AmazonSageMakerPromptDriver](../../reference/griptape/drivers/prompt/amazon_sagemaker_prompt_driver.md) uses [Amazon SageMaker Endpoints](https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints.html) for inference on AWS.
 
+!!! info
+    For single model endpoints, the `model` parameter does not need to be specified.  
+    For multi-model endpoints, the `model` parameter should be the inference component name.
+
+!!! warning
+    Make sure that the selected prompt model driver is compatible with the selected model. Note that even the same
+    logical model can require different prompt model drivers depending on how it is bundled in the endpoint. For
+    example, the reponse format are different for `Meta-Llama-3-8B-Instruct` when deployed via
+    "Amazon SageMaker JumpStart" and "Hugging Face on Amazon SageMaker".
+
 ##### LLaMA
 
 ```python title="PYTEST_IGNORE"
@@ -416,8 +426,40 @@ from griptape.config import StructureConfig
 agent = Agent(
     config=StructureConfig(
         prompt_driver=AmazonSageMakerPromptDriver(
-            model=os.environ["SAGEMAKER_LLAMA_ENDPOINT_NAME"],
+            endpoint=os.environ["SAGEMAKER_LLAMA_ENDPOINT_NAME"],
             prompt_model_driver=SageMakerLlamaPromptModelDriver(),
+            temperature=0.75,
+        )
+    ),
+    rules=[
+        Rule(
+            value="You are a helpful, respectful and honest assistant who is also a swarthy pirate."
+            "You only speak like a pirate and you never break character."
+        )
+    ],
+)
+
+agent.run("Hello!")
+```
+
+##### Llama 3
+
+```python title="PYTEST_IGNORE"
+import os
+from griptape.structures import Agent
+from griptape.drivers import (
+    AmazonSageMakerPromptDriver,
+    SageMakerJumpStartLlama3InstructPromptModelDriver,
+)
+from griptape.rules import Rule
+from griptape.config import StructureConfig
+
+agent = Agent(
+    config=StructureConfig(
+        prompt_driver=AmazonSageMakerPromptDriver(
+            endpoint=os.environ["SAGEMAKER_LLAMA_3_ENDPOINT_NAME"],
+            model=os.environ["SAGEMAKER_LLAMA_3_INFERENCE_COMPONENT_NAME"],
+            prompt_model_driver=SageMakerJumpStartLlama3InstructPromptModelDriver(),
             temperature=0.75,
         )
     ),
@@ -446,7 +488,8 @@ from griptape.config import StructureConfig
 agent = Agent(
     config=StructureConfig(
         prompt_driver=AmazonSageMakerPromptDriver(
-            model=os.environ["SAGEMAKER_FALCON_ENDPOINT_NAME"],
+            endpoint=os.environ["SAGEMAKER_FALCON_ENDPOINT_NAME"],
+            model=os.environ["SAGEMAKER_FALCON_INFERENCE_COMPONENT_NAME"],
             prompt_model_driver=SageMakerFalconPromptModelDriver(),
         )
     )

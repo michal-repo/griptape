@@ -53,6 +53,9 @@ from .sql.sql_driver import SqlDriver
 
 from .prompt_model.base_prompt_model_driver import BasePromptModelDriver
 from .prompt_model.sagemaker_llama_prompt_model_driver import SageMakerLlamaPromptModelDriver
+from .prompt_model.sagemaker_jumpstart_llama3_instruct_prompt_model_driver import (
+    SageMakerJumpStartLlama3InstructPromptModelDriver,
+)
 from .prompt_model.sagemaker_falcon_prompt_model_driver import SageMakerFalconPromptModelDriver
 from .prompt_model.bedrock_titan_prompt_model_driver import BedrockTitanPromptModelDriver
 from .prompt_model.bedrock_claude_prompt_model_driver import BedrockClaudePromptModelDriver
@@ -157,6 +160,7 @@ __all__ = [
     "SqlDriver",
     "BasePromptModelDriver",
     "SageMakerLlamaPromptModelDriver",
+    "SageMakerJumpStartLlama3InstructPromptModelDriver",
     "SageMakerFalconPromptModelDriver",
     "BedrockTitanPromptModelDriver",
     "BedrockClaudePromptModelDriver",

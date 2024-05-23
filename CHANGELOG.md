@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `AzureOpenAiStructureConfig` for providing Structures with all Azure OpenAI Driver configuration.
 - `AzureOpenAiVisionImageQueryDriver` to support queries on images using Azure's OpenAI Vision models.
+- `SageMakerJumpStartLlama3InstructPromptModelDriver` for using the Llama 3 Instruct model on SageMaker JumpStart.
 
 ### Changed
 - Default the value of `azure_deployment` on all Azure Drivers to the model the Driver is using.
 - Field `azure_ad_token` on all Azure Drivers is no longer serializable.
+- **BREAKING**: `AmazonSageMakerPromptDriver.model` parameter, which gets passed to `SageMakerRuntime.Client.invoke_endpoint` as `EndpointName`, is now renamed to `AmazonSageMakerPromptDriver.endpoint`.
+- **BREAKING** `AmazonSageMakerPromptDriver.model` parameter is now optional being passed to `SageMakerRuntime.Client.invoke_endpoint` as `InferenceComponentName` (instead of `EndpointName`).
 
 ## [0.25.1] - 2024-05-15
 
