@@ -1,7 +1,11 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional
 from attrs import define, field
 from griptape.artifacts import BaseArtifact
+from collections.abc import Sequence
+
+from griptape.artifacts import BaseChunkArtifact
 
 if TYPE_CHECKING:
     from griptape.drivers import BaseEmbeddingDriver
@@ -36,3 +40,12 @@ class TextArtifact(BaseArtifact):
 
     def to_bytes(self) -> bytes:
         return self.value.encode(encoding=self.encoding, errors=self.encoding_error_handler)
+
+    @classmethod
+    def from_chunks(cls, chunks: Sequence[BaseChunkArtifact]) -> TextArtifact:
+        result = ""
+
+        for chunk in chunks:
+            result += chunk.value
+
+        return TextArtifact(result)

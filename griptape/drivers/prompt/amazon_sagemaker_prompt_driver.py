@@ -1,15 +1,20 @@
 from __future__ import annotations
+
 import json
-from typing import TYPE_CHECKING, Any
 from collections.abc import Iterator
-from attrs import define, field, Factory
-from griptape.artifacts import TextArtifact
+from typing import TYPE_CHECKING, Any
+
+from attrs import Factory, define, field
+
+from griptape.artifacts import TextArtifact, TextChunkArtifact
 from griptape.utils import import_optional_dependency
+
 from .base_multi_model_prompt_driver import BaseMultiModelPromptDriver
 
 if TYPE_CHECKING:
-    from griptape.utils import PromptStack
     import boto3
+
+    from griptape.utils import PromptStack
 
 
 @define
@@ -45,5 +50,5 @@ class AmazonSageMakerPromptDriver(BaseMultiModelPromptDriver):
         else:
             raise Exception("model response is empty")
 
-    def try_stream(self, prompt_stack: PromptStack) -> Iterator[TextArtifact]:
+    def try_stream(self, prompt_stack: PromptStack) -> Iterator[TextChunkArtifact]:
         raise NotImplementedError("streaming is not supported")

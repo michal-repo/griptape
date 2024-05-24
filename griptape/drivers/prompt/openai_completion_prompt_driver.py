@@ -1,11 +1,13 @@
-from typing import Optional
 from collections.abc import Iterator
-from attrs import define, field, Factory
-from griptape.artifacts import TextArtifact
-from griptape.utils import PromptStack
+from typing import Optional
+
+import openai
+from attrs import Factory, define, field
+
+from griptape.artifacts import TextArtifact, TextChunkArtifact
 from griptape.drivers import BasePromptDriver
 from griptape.tokenizers import OpenAiTokenizer
-import openai
+from griptape.utils import PromptStack
 
 
 @define
@@ -58,14 +60,14 @@ class OpenAiCompletionPromptDriver(BasePromptDriver):
         else:
             raise Exception("completion with more than one choice is not supported yet")
 
-    def try_stream(self, prompt_stack: PromptStack) -> Iterator[TextArtifact]:
+    def try_stream(self, prompt_stack: PromptStack) -> Iterator[TextChunkArtifact]:
         result = self.client.completions.create(**self._base_params(prompt_stack), stream=True)
 
         for chunk in result:
             if len(chunk.choices) == 1:
                 choice = chunk.choices[0]
                 delta_content = choice.text
-                yield TextArtifact(value=delta_content)
+                yield TextChunkArtifact(value=delta_content)
 
             else:
                 raise Exception("completion with more than one choice is not supported yet")

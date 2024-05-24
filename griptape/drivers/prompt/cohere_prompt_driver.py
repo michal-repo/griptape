@@ -1,8 +1,11 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+
 from collections.abc import Iterator
-from attrs import define, field, Factory
-from griptape.artifacts import TextArtifact
+from typing import TYPE_CHECKING
+
+from attrs import Factory, define, field
+
+from griptape.artifacts import TextArtifact, TextChunkArtifact
 from griptape.drivers import BasePromptDriver
 from griptape.tokenizers import CohereTokenizer
 from griptape.utils import PromptStack, import_optional_dependency
@@ -45,14 +48,14 @@ class CoherePromptDriver(BasePromptDriver):
         else:
             raise Exception("model response is empty")
 
-    def try_stream(self, prompt_stack: PromptStack) -> Iterator[TextArtifact]:
+    def try_stream(self, prompt_stack: PromptStack) -> Iterator[TextChunkArtifact]:
         result = self.client.generate(
             **self._base_params(prompt_stack),
             stream=True,  # pyright: ignore[reportCallIssue]
         )
 
         for chunk in result:
-            yield TextArtifact(value=chunk.text)
+            yield TextChunkArtifact(value=chunk.text)
 
     def _base_params(self, prompt_stack: PromptStack) -> dict:
         prompt = self.prompt_stack_to_string(prompt_stack)
