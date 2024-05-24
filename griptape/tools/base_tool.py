@@ -1,16 +1,18 @@
 from __future__ import annotations
+
+import inspect
 import logging
+import os
 import subprocess
 import sys
-from typing import TYPE_CHECKING, Callable
-from schema import Schema, Literal, Or
-import inspect
-import os
 from abc import ABC
-from typing import Optional
+from typing import TYPE_CHECKING, Callable, Optional
+
 import yaml
-from attrs import define, field, Factory
-from griptape.artifacts import BaseArtifact, InfoArtifact, TextArtifact
+from attrs import Factory, define, field
+from schema import Literal, Or, Schema
+
+from griptape.artifacts import ActionArtifact, BaseArtifact, InfoArtifact, TextArtifact
 from griptape.mixins import ActivityMixin
 
 if TYPE_CHECKING:
@@ -107,18 +109,18 @@ class BaseTool(ActivityMixin, ABC):
             for activity in self.activities()
         ]
 
-    def execute(self, activity: Callable, subtask: ActionsSubtask, action: ActionsSubtask.Action) -> BaseArtifact:
+    def execute(self, activity: Callable, subtask: ActionsSubtask, action: ActionArtifact.Action) -> BaseArtifact:
         preprocessed_input = self.before_run(activity, subtask, action)
         output = self.run(activity, subtask, action, preprocessed_input)
         postprocessed_output = self.after_run(activity, subtask, action, output)
 
         return postprocessed_output
 
-    def before_run(self, activity: Callable, subtask: ActionsSubtask, action: ActionsSubtask.Action) -> Optional[dict]:
+    def before_run(self, activity: Callable, subtask: ActionsSubtask, action: ActionArtifact.Action) -> Optional[dict]:
         return action.input
 
     def run(
-        self, activity: Callable, subtask: ActionsSubtask, action: ActionsSubtask.Action, value: Optional[dict]
+        self, activity: Callable, subtask: ActionsSubtask, action: ActionArtifact.Action, value: Optional[dict]
     ) -> BaseArtifact:
         activity_result = activity(value)
 
@@ -132,7 +134,7 @@ class BaseTool(ActivityMixin, ABC):
         return result
 
     def after_run(
-        self, activity: Callable, subtask: ActionsSubtask, action: ActionsSubtask.Action, value: BaseArtifact
+        self, activity: Callable, subtask: ActionsSubtask, action: ActionArtifact.Action, value: BaseArtifact
     ) -> BaseArtifact:
         if value:
             if self.output_memory:
