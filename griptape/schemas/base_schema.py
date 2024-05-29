@@ -14,7 +14,13 @@ class BaseSchema(Schema):
     class Meta:
         unknown = EXCLUDE
 
-    DATACLASS_TYPE_MAPPING = {**Schema.TYPE_MAPPING, dict: fields.Dict, bytes: Bytes}
+    DATACLASS_TYPE_MAPPING = {
+        **Schema.TYPE_MAPPING,
+        dict: fields.Dict,
+        bytes: Bytes,
+        tuple: fields.Tuple,
+        list: fields.List,
+    }
 
     @classmethod
     def from_attrs_cls(cls, attrs_cls: type) -> type:
