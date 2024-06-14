@@ -27,7 +27,10 @@ class ImageQueryClient(BaseTool):
                         "query",
                         description="A detailed question to be answered using the contents of the provided images.",
                     ): str,
-                    Literal("image_paths", description="The paths to an image files on disk."): list[str],
+                    Literal(
+                        "image_paths",
+                        description="List of relative paths in POSIX format to image files on disk. For example, ['foo/bar', 'fizz/buzz'].",
+                    ): list[str],
                 }
             ),
         }
