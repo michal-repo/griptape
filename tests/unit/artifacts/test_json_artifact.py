@@ -20,7 +20,7 @@ class TestJsonArtifact:
         assert new == {"foo": "bar", "value": "baz"}
 
         assert JsonArtifact({"foo": "bar"}) + JsonArtifact({"foo": "baz"}) == JsonArtifact({"foo": "baz"})
-        with pytest.raises(json.JSONDecodeError):
+        with pytest.raises(ValueError):
             JsonArtifact({"foo": "bar"}) + TextArtifact("invalid json")
 
     def test___eq__(self):
