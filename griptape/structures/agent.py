@@ -52,3 +52,7 @@ class Agent(Structure):
         if len(tasks) > 1:
             raise ValueError("Agents can only have one task.")
         return super().add_tasks(*tasks)
+
+    def resolve_relationships(self) -> None:
+        if len(self.tasks) > 1:
+            raise ValueError("Agents can only have one task.")
