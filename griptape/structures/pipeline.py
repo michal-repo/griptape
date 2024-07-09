@@ -54,11 +54,16 @@ class Pipeline(Structure):
         return context
 
     def resolve_relationships(self) -> None:
-        super().resolve_relationships()
         for i, task in enumerate(self.tasks):
-            if i == 0 and len(task.parents) > 0:
+            if i > 0 and self.tasks[i - 1].id not in task.parent_ids:
+                task.parent_ids.append(self.tasks[i - 1].id)
+            if i < len(self.tasks) - 1 and self.tasks[i + 1].id not in task.child_ids:
+                task.child_ids.append(self.tasks[i + 1].id)
+            if i == 0 and len(task.parent_ids) > 0:
                 raise ValueError("The first task in a pipeline cannot have a parent.")
-            if len(task.parents) > 1 or len(task.children) > 1:
+            if len(task.parent_ids) > 1 or len(task.child_ids) > 1:
                 raise ValueError("Pipelines can only have one parent and one child per task.")
-            if i == len(self.tasks) - 1 and len(task.children) > 0:
+            if i == len(self.tasks) - 1 and len(task.child_ids) > 0:
                 raise ValueError("The last task in a pipeline cannot have a child.")
+
+        super().resolve_relationships()
