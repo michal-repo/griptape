@@ -316,7 +316,6 @@ class Structure(ABC):
 
         return self
 
-    @abstractmethod
     def order_tasks(self) -> list[BaseTask]:
         return [self.find_task(task_id) for task_id in TopologicalSorter(self.to_graph()).static_order()]
 
