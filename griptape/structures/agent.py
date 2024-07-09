@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Optional, Callable
 from attrs import define, field
 from griptape.artifacts.text_artifact import TextArtifact
 from griptape.tools import BaseTool
-from griptape.memory.structure import Run
 from griptape.structures import Structure
 from griptape.tasks import PromptTask, ToolkitTask
 from griptape.artifacts import BaseArtifact
@@ -53,13 +52,3 @@ class Agent(Structure):
         if len(tasks) > 1:
             raise ValueError("Agents can only have one task.")
         return super().add_tasks(*tasks)
-
-    def try_run(self, *args) -> Agent:
-        self.task.execute()
-
-        if self.conversation_memory and self.output is not None:
-            run = Run(input=self.input_task.input, output=self.output)
-
-            self.conversation_memory.add_run(run)
-
-        return self

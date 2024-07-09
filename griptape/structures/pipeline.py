@@ -1,8 +1,6 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Any
+from typing import TYPE_CHECKING, Any
 from attrs import define
-from griptape.artifacts import ErrorArtifact
-from griptape.memory.structure import Run
 from griptape.structures import Structure
 
 if TYPE_CHECKING:
@@ -42,16 +40,6 @@ class Pipeline(Structure):
 
         return task
 
-    def try_run(self, *args) -> Pipeline:
-        self.__run_from_task(self.input_task)
-
-        if self.conversation_memory and self.output is not None:
-            run = Run(input=self.input_task.input, output=self.output)
-
-            self.conversation_memory.add_run(run)
-
-        return self
-
     def context(self, task: BaseTask) -> dict[str, Any]:
         context = super().context(task)
 
@@ -64,12 +52,3 @@ class Pipeline(Structure):
         )
 
         return context
-
-    def __run_from_task(self, task: Optional[BaseTask]) -> None:
-        if task is None:
-            return
-        else:
-            if isinstance(task.execute(), ErrorArtifact) and self.fail_fast:
-                return
-            else:
-                self.__run_from_task(next(iter(task.children), None))
