@@ -209,6 +209,7 @@ select = [
     "SIM", # flake8-simplify
     "TID251", # banned-api
     "T201", # print
+    "COM" # flake8-commas
 ]
 ignore = [
     "UP007", # non-pep604-annotation
@@ -216,6 +217,7 @@ ignore = [
     "B024", # abstract-base-class-without-abstract-method
     "B009", # get-attr-with-constant
     "B010", # set-attr-with-constant
+    "COM812" # trailing-comma
 ]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]

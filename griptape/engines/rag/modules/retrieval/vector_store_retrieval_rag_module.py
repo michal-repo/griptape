@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Sequence, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Sequence
 from attrs import define, field, Factory
 from griptape import utils
 from griptape.artifacts import TextArtifact
