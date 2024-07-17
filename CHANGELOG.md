@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Observability` context manager for enabling observability and configuring which Observability Driver to use.
 - `@observable` decorator for selecting which functions/methods to provide observability for.
 - `GenericArtifact` for storing any data.
+- `GriptapeCloudPromptDriver` for using Griptape Cloud's prompt API.
+- `GriptapeCloudEmbeddingDriver` for using Griptape Cloud's embedding API.
 
 ### Changed
 - **BREAKING**: `BaseVectorStoreDriver.upsert_text_artifacts` optional arguments are now keyword-only arguments.

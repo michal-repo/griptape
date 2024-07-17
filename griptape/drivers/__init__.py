@@ -10,6 +10,7 @@ from .prompt.amazon_bedrock_prompt_driver import AmazonBedrockPromptDriver
 from .prompt.google_prompt_driver import GooglePromptDriver
 from .prompt.dummy_prompt_driver import DummyPromptDriver
 from .prompt.ollama_prompt_driver import OllamaPromptDriver
+from .prompt.griptape_cloud_prompt_driver import GriptapeCloudPromptDriver
 
 from .memory.conversation.base_conversation_memory_driver import BaseConversationMemoryDriver
 from .memory.conversation.local_conversation_memory_driver import LocalConversationMemoryDriver
@@ -28,6 +29,7 @@ from .embedding.google_embedding_driver import GoogleEmbeddingDriver
 from .embedding.dummy_embedding_driver import DummyEmbeddingDriver
 from .embedding.cohere_embedding_driver import CohereEmbeddingDriver
 from .embedding.ollama_embedding_driver import OllamaEmbeddingDriver
+from .embedding.griptape_cloud_embedding_driver import GriptapeCloudEmbeddingDriver
 
 from .vector.base_vector_store_driver import BaseVectorStoreDriver
 from .vector.local_vector_store_driver import LocalVectorStoreDriver
@@ -127,6 +129,7 @@ __all__ = [
     "GooglePromptDriver",
     "DummyPromptDriver",
     "OllamaPromptDriver",
+    "GriptapeCloudPromptDriver",
     "BaseConversationMemoryDriver",
     "LocalConversationMemoryDriver",
     "AmazonDynamoDbConversationMemoryDriver",
@@ -143,6 +146,7 @@ __all__ = [
     "DummyEmbeddingDriver",
     "CohereEmbeddingDriver",
     "OllamaEmbeddingDriver",
+    "GriptapeCloudEmbeddingDriver",
     "BaseVectorStoreDriver",
     "LocalVectorStoreDriver",
     "PineconeVectorStoreDriver",
