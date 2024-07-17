@@ -36,6 +36,7 @@ class PromptImageGenerationClient(BlobArtifactFileOutputMixin, BaseTool):
         }
     )
     def generate_image(self, params: dict[str, dict[str, list[str]]]) -> ImageArtifact | ErrorArtifact:
+        # TODO: schema bug here
         prompts = params["values"]["prompts"]
 
         output_artifact = self.engine.run(prompts=prompts)
