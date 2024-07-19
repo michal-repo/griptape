@@ -38,7 +38,7 @@ class GriptapeCloudEmbeddingDriver(BaseEmbeddingDriver):
         response.raise_for_status()
         response_json = response.json()
 
-        return response_json["embedding"]
+        return response_json
 
     def _params(self, chunk: str) -> dict:
         return {"input": chunk, "params": {"model": self.model}}

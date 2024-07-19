@@ -104,7 +104,7 @@ class BaseSchema(Schema):
         from collections.abc import Sequence
         from typing import Any
 
-        from griptape.artifacts import BaseArtifact
+        from griptape.artifacts import BaseArtifact, BlobArtifact, ImageArtifact, TextArtifact
         from griptape.common import (
             BaseDeltaMessageContent,
             BaseMessageContent,
@@ -113,8 +113,6 @@ class BaseSchema(Schema):
             Reference,
             ToolAction,
         )
-
-        # These modules are required to avoid `NameError`s when resolving types.
         from griptape.drivers import (
             BaseAudioTranscriptionDriver,
             BaseConversationMemoryDriver,
@@ -144,6 +142,9 @@ class BaseSchema(Schema):
                 "BaseConversationMemoryDriver": BaseConversationMemoryDriver,
                 "BaseImageGenerationDriver": BaseImageGenerationDriver,
                 "BaseArtifact": BaseArtifact,
+                "ImageArtifact": ImageArtifact,
+                "TextArtifact": TextArtifact,
+                "BlobArtifact": BlobArtifact,
                 "PromptStack": PromptStack,
                 "BaseMessageContent": BaseMessageContent,
                 "BaseDeltaMessageContent": BaseDeltaMessageContent,
