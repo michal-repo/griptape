@@ -32,6 +32,7 @@ class GriptapeCloudPromptDriver(BasePromptDriver):
         headers: Headers for Griptape Cloud.
     """
 
+    model: str = field(default="auto", kw_only=True)
     api_key: str = field(default=Factory(lambda: os.getenv("GT_CLOUD_API_KEY")), kw_only=True)
     base_url: str = field(default="https://cloud.griptape.ai", kw_only=True)
     headers: dict = field(
