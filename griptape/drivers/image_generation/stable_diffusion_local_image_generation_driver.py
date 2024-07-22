@@ -1,4 +1,5 @@
-from typing import Optional
+import os
+from typing import Optional, Any
 import io
 
 from attrs import define, field
@@ -21,13 +22,19 @@ class StableDiffusionLocalImageGenerationDriver(BaseImageGenerationDriver):
     height: int = field(default=1024, kw_only=True, metadata={"serializable": True})
     strength: float | None = field(default=None, kw_only=True, metadata={"serializable": True})
 
+    def _load_pipeline(self, pipeline_class: type[StableDiffusion3Pipeline | StableDiffusion3Img2ImgPipeline]) -> Any:
+        if os.path.exists(self.model):
+            return pipeline_class.from_single_file(self.model, torch_dtype=torch.float16)
+
+        return pipeline_class.from_pretrained(self.model, torch_dtype=torch.float16)
+
     def try_text_to_image(self, prompts: list[str], negative_prompts: list[str] | None = None) -> ImageArtifact:
         if isinstance(prompts, str):
             prompt = prompts
         else:
             prompt = ", ".join(prompts)
 
-        pipeline = StableDiffusion3Pipeline.from_pretrained(self.model, torch_dtype=torch.float16)
+        pipeline = self._load_pipeline(StableDiffusion3Pipeline)
         pipeline.to(self.device)
         image = pipeline(
             prompt, width=self.width, height=self.height, **self._make_additional_params(negative_prompts)
@@ -45,7 +52,7 @@ class StableDiffusionLocalImageGenerationDriver(BaseImageGenerationDriver):
         prompt = ", ".join(prompts)
 
         input_image = Image.open(io.BytesIO(image.value))
-        pipeline = StableDiffusion3Img2ImgPipeline.from_pretrained(self.model, torch_dtype=torch.float16)
+        pipeline = self._load_pipeline(StableDiffusion3Img2ImgPipeline)
         pipeline.to(self.device)
         image = pipeline(
             prompt,

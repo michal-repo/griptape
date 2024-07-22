@@ -1,4 +1,6 @@
 import io
+import os
+from typing import Any
 
 from attrs import define, field
 
@@ -20,20 +22,32 @@ from PIL import Image
 class StableDiffusionLocalControlNetImageGenerationDriver(
     StableDiffusionLocalImageGenerationDriver, BaseControlNetImageGenerationDriver
 ):
-    control_net_model: str = field(kw_only=True)
+    controlnet_model: str = field(kw_only=True)
     controlnet_conditioning_scale: float | None = field(default=None, kw_only=True, metadata={"serializable": True})
+
+    def _load_pipeline(
+        self, pipeline_class: type[StableDiffusion3ControlNetPipeline], controlnet: Any | None = None
+    ) -> Any:
+        if os.path.exists(self.model):
+            return pipeline_class.from_single_file(self.model, controlnet=controlnet, torch_dtype=torch.float16)
+
+        return pipeline_class.from_pretrained(self.model, controlnet=controlnet, torch_dtype=torch.float16)
+
+    def _load_controlnet(self, controlnet_class: type[SD3ControlNetModel]) -> Any:
+        if os.path.exists(self.controlnet_model):
+            return SD3ControlNetModel.from_single_file(self.controlnet_model, torch_dtype=torch.float16)
+
+        return SD3ControlNetModel.from_pretrained(self.controlnet_model, torch_dtype=torch.float16)
 
     def try_controlnet_image_generation(
         self, prompts: list[str], control_image: ImageArtifact, negative_prompts: list[str] | None = None
     ) -> ImageArtifact:
         control_image_input = Image.open(io.BytesIO(control_image.value))
 
-        controlnet = SD3ControlNetModel.from_pretrained(self.control_net_model, torch_dtype=torch.float16)
+        controlnet = self._load_controlnet(SD3ControlNetModel)
         controlnet.to(self.device)
 
-        pipe = StableDiffusion3ControlNetPipeline.from_pretrained(
-            self.model, controlnet=controlnet, torch_dtype=torch.float16
-        )
+        pipe = self._load_pipeline(StableDiffusion3ControlNetPipeline, controlnet=controlnet)
         pipe.to(self.device)
 
         output = pipe(
