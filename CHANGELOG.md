@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+- Ability to set custom schema properties on Tool Activities via `extra_schema_properties`.
+
 ## [0.29.0] - 2024-07-30
 
 ### Added
