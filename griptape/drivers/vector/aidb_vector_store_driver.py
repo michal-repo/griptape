@@ -101,12 +101,12 @@ class AidbVectorStoreDriver(BaseVectorStoreDriver):
         """Performs a query on AIDB."""
         cur = self.engine.cursor()
         try:
-            cur.execute(f"""SELECT data from aidb.retrieve('{query}', {count}, {retriever_name});""")
+            cur.execute(f"""SELECT data from aidb.retrieve('{query}', {count}, '{retriever_name}');""")
             results = cur.fetchall()
             query_results = [result[0] for result in results]
 
         except Exception as e:
-            logger.error("An error occurred: " + str(e))
+            logger.error("An error occurred in griptape: " + str(e))
         finally:
             cur.close()
 
