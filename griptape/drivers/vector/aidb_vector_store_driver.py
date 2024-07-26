@@ -39,11 +39,11 @@ class AidbVectorStoreDriver(BaseVectorStoreDriver):
     )
 
     engine = psycopg2.connect(
-        dbname="postgres",
-        user="postgres",
-        password="password",
-        host="localhost",
-        port=15432,
+        dbname=dbname,
+        user=user,
+        password=password,
+        host=host,
+        port=port,
     )
 
     def upsert_vector(
