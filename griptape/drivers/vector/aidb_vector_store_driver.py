@@ -94,14 +94,12 @@ class AidbVectorStoreDriver(BaseVectorStoreDriver):
         namespace: Optional[str] = None,
         include_vectors: Optional[bool] = None,
         distance_metric: Optional[str] = None,
-        # AidbVectorStoreDriver-specific params:
-        retriever_name: Optional[str] = "img_embeddings",  # noqa: A002
         **kwargs,
     ) -> list[BaseVectorStoreDriver.Entry]:
         """Performs a query on AIDB."""
         cur = self.engine.cursor()
         try:
-            cur.execute(f"""SELECT data from aidb.retrieve('{query}', {count}, '{retriever_name}');""")
+            cur.execute(f"""SELECT data from aidb.retrieve('{query}', {count}, '{namespace}');""")
             results = cur.fetchall()
             query_results = [result[0] for result in results]
 
