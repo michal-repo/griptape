@@ -293,9 +293,6 @@ convention = "google"
     "ANN202", # missing-return-type-private-function
 ]
 
-[tool.ruff.lint.flake8-tidy-imports.banned-api]
-"attr".msg = "The attr module is deprecated, use attrs instead."
-
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
