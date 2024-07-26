@@ -42,6 +42,7 @@ from .vector.azure_mongodb_vector_store_driver import AzureMongoDbVectorStoreDri
 from .vector.dummy_vector_store_driver import DummyVectorStoreDriver
 from .vector.qdrant_vector_store_driver import QdrantVectorStoreDriver
 from .vector.griptape_cloud_knowledge_base_vector_store_driver import GriptapeCloudKnowledgeBaseVectorStoreDriver
+from .vector.aidb_vector_store_driver import AidbVectorStoreDriver
 
 from .sql.base_sql_driver import BaseSqlDriver
 from .sql.amazon_redshift_sql_driver import AmazonRedshiftSqlDriver
@@ -213,4 +214,5 @@ __all__ = [
     "OpenTelemetryObservabilityDriver",
     "GriptapeCloudObservabilityDriver",
     "DatadogObservabilityDriver",
+    "AidbVectorStoreDriver",
 ]
