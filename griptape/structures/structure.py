@@ -96,6 +96,8 @@ class Structure(ABC, EventPublisherMixin):
     def __attrs_post_init__(self) -> None:
         if self.conversation_memory is not None:
             self.conversation_memory.structure = self
+            if self.conversation_memory.autoload:
+                self.conversation_memory.load()
 
         self.config.structure = self
 

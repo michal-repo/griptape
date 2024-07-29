@@ -24,10 +24,16 @@ class BaseConversationMemory(SerializableMixin, ABC):
     max_runs: Optional[int] = field(default=None, kw_only=True, metadata={"serializable": True})
 
     def __attrs_post_init__(self) -> None:
-        if self.driver and self.autoload:
+        if self.autoload and getattr(self, "structure", None) is None:
+            self.load()
+
+    def load(self) -> BaseConversationMemory:
+        if self.driver:
             memory = self.driver.load()
             if memory is not None:
                 [self.add_run(r) for r in memory.runs]
+
+        return self
 
     def before_add_run(self) -> None:
         pass
