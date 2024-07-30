@@ -307,6 +307,20 @@ class TestWorkflow:
 
         self._validate_topology_1(workflow)
 
+    def test_run_topology_1_imperative_parents_structure_init(self):
+        workflow = Workflow(prompt_driver=MockPromptDriver())
+        task1 = PromptTask("test1", id="task1", structure=workflow)
+        task2 = PromptTask("test2", id="task2", structure=workflow)
+        task3 = PromptTask("test3", id="task3", structure=workflow)
+        task4 = PromptTask("test4", id="task4", structure=workflow)
+        task2.add_parent(task1)
+        task3.add_parent("task1")
+        task4.add_parents([task2, "task3"])
+
+        workflow.run()
+
+        self._validate_topology_1(workflow)
+
     def test_run_topology_1_imperative_children(self):
         task1 = PromptTask("test1", id="task1")
         task2 = PromptTask("test2", id="task2")
